@@ -1,4 +1,5 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
 
 import numpy as np
 import numpy.typing as npt
@@ -159,7 +160,7 @@ class GeodeticWorldCoordinate(WorldCoordinate):
         if lat_degrees < 0:
             lat_degrees *= -1.0
             lh = "S"
-        ld = int(lat_degrees)
+        ld = int(round(lat_degrees, 6))
         lm = int(round(lat_degrees - ld, 6) * 60)
         ls = int(round(lat_degrees - ld - lm / 60, 6) * 3600)
 
@@ -168,7 +169,7 @@ class GeodeticWorldCoordinate(WorldCoordinate):
         if lon_degrees < 0:
             lon_degrees *= -1.0
             oh = "W"
-        od = int(lon_degrees)
+        od = int(round(lon_degrees, 6))
         om = int(round(lon_degrees - od, 6) * 60)
         os = int(round(lon_degrees - od - om / 60, 6) * 3600)
 
