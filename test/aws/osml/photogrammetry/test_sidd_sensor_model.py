@@ -1,4 +1,5 @@
-#  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2023-2025 Amazon.com, Inc. or its affiliates.
+#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
 
 import unittest
 from math import radians
@@ -54,7 +55,7 @@ class TestSIDDSensorModel(unittest.TestCase):
                 raise ValueError(f"Unexpected ICP in test data {icp.index.value}")
 
             computed_world_location = sm.image_to_world(image_location)
-            computed_image_location = sm.world_to_image(world_location)
+            computed_image_location = sm.world_to_image(computed_world_location)
 
             assert np.allclose(computed_world_location.coordinate[0:2], world_location.coordinate[0:2], atol=0.000001)
             assert np.allclose(computed_image_location.coordinate, image_location.coordinate, atol=0.5)
