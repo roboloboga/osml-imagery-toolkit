@@ -1,4 +1,5 @@
-#  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2023-2025 Amazon.com, Inc. or its affiliates.
+#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
 
 import unittest
 from secrets import token_hex
@@ -266,6 +267,9 @@ class TestGDALTileFactory(TestCase):
         height = full_dataset.RasterYSize
         image_corners = [[0, 0], [width, 0], [width, height], [0, height]]
         geo_image_corners = [tile_factory.sensor_model.image_to_world(ImageCoordinate(corner)) for corner in image_corners]
+        tile_matrix = 0
+        tile_row = 0
+        tile_col = 0
         for level in range(0, 25):
             min_tile_col, min_tile_row, max_tile_col, max_tile_row = tile_set.get_tile_matrix_limits_for_area(
                 boundary_coordinates=geo_image_corners, tile_matrix=level
@@ -292,6 +296,7 @@ class TestGDALTileFactory(TestCase):
         tile_set_id = "WebMercatorQuad"
         tile_set = MapTileSetFactory.get_for_id(tile_set_id)
         full_dataset, sensor_model = load_gdal_dataset("./test/data/sidd/umbra-sidd200-chip1.ntf")
+
         tile_factory = GDALTileFactory(
             full_dataset,
             sensor_model,
@@ -300,12 +305,28 @@ class TestGDALTileFactory(TestCase):
             output_type=gdalconst.GDT_Byte,
             range_adjustment=RangeAdjustmentType.DRA,
         )
+        width = full_dataset.RasterXSize
+        height = full_dataset.RasterYSize
+        image_corners = [[0, 0], [width, 0], [width, height], [0, height]]
+        geo_image_corners = [tile_factory.sensor_model.image_to_world(ImageCoordinate(corner)) for corner in image_corners]
         tile_matrix = 0
         tile_row = 0
         tile_col = 0
+        for level in range(0, 25):
+            min_tile_col, min_tile_row, max_tile_col, max_tile_row = tile_set.get_tile_matrix_limits_for_area(
+                boundary_coordinates=geo_image_corners, tile_matrix=level
+            )
+            if min_tile_col != max_tile_col or min_tile_row != max_tile_row:
+                break
+
+            tile_matrix = level
+            tile_row = min_tile_row
+            tile_col = min_tile_col
+
         map_tile = tile_set.get_tile(MapTileId(tile_matrix=tile_matrix, tile_row=tile_row, tile_col=tile_col))
         encoded_tile_data = tile_factory.create_orthophoto_tile(geo_bbox=map_tile.bounds, tile_size=map_tile.size)
         assert encoded_tile_data is not None
+
         temp_ds_name = "/vsimem/" + token_hex(16) + ".PNG"
         gdal.FileFromMemBuffer(temp_ds_name, encoded_tile_data)
         tile_dataset = gdal.Open(temp_ds_name)
