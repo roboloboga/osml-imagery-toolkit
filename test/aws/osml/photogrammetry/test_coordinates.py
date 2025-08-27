@@ -1,4 +1,5 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
 
 import unittest
 from math import radians
@@ -145,6 +146,57 @@ class TestCoordinates(unittest.TestCase):
 
         geodetic_coordinate = GeodeticWorldCoordinate([1.1, 2.2, 3.3])
         assert f"{geodetic_coordinate!r}" == "GeodeticWorldCoordinate(coordinate=array([1.1, 2.2, 3.3]))"
+
+    def test_geodeticworldcoordinate_normalized(self):
+        from aws.osml.photogrammetry.coordinates import GeodeticWorldCoordinate
+
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(0.0), radians(0.0), 1.0)).normalized()
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(0.0), radians(0.0), 1.0), abs=1e-6)
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(360.0), radians(0.0), 1.0)).normalized()
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(0.0), radians(0.0), 1.0), abs=1e-6)
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(1.0), radians(181.0), 1.0)).normalized()
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(-179.0), radians(-1.0), 1.0), abs=1e-6)
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(-700.0), radians(-91.0), 1.0)).normalized()
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(-160.0), radians(-89.0), 1.0), abs=1e-6)
+
+    def test_geodeticworldcoordinate_range_adjusted(self):
+        from aws.osml.photogrammetry.coordinates import GeodeticWorldCoordinate
+
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(-700.0), radians(-91.0), 1.0)).range_adjusted(
+            radians(-180.0),
+            radians(180.0),
+            radians(-90.0),
+            radians(90.0),
+        )
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(-160.0), radians(-89.0), 1.0), abs=1e-6)
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(-700.0), radians(-91.0), 1.0)).range_adjusted(
+            radians(0.0),
+            radians(360.0),
+            radians(-90.0),
+            radians(90.0),
+        )
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(200.0), radians(-89.0), 1.0), abs=1e-6)
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(181.0), radians(179.0), 1.0)).range_adjusted(
+            radians(360.0),
+            radians(720.0),
+            radians(-270.0),
+            radians(-180.0),
+        )
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(541.0), radians(-181.0), 1.0), abs=1e-6)
+        geodetic_coordinate = GeodeticWorldCoordinate((radians(181.0), radians(1.0), 1.0)).range_adjusted(
+            radians(0.0),
+            radians(355.0),
+            radians(-185.0),
+            radians(0.0),
+        )
+        assert geodetic_coordinate.coordinate == pytest.approx((radians(1.0), radians(-181.0), 1.0), abs=1e-6)
+        with pytest.raises(ValueError):
+            geodetic_coordinate = GeodeticWorldCoordinate((radians(0.0), radians(0.0), 0.0)).range_adjusted(
+                radians(1.0),
+                radians(2.0),
+                radians(1.0),
+                radians(2.0),
+            )
 
     def test_ecef_to_geodetic(self):
         from aws.osml.photogrammetry.coordinates import WorldCoordinate, geocentric_to_geodetic
