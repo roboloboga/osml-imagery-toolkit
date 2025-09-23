@@ -3,8 +3,8 @@
 import unittest
 
 
-class TestElevationModel(unittest.TestCase):
-    def test_constant_elevation_model(self):
+class TestConditionalElevationModel(unittest.TestCase):
+    def test_true_false(self):
         from aws.osml.photogrammetry.conditional_elevation_model import ConditionalElevationModel
         from aws.osml.photogrammetry.coordinates import GeodeticWorldCoordinate
         from aws.osml.photogrammetry.elevation_model import ConstantElevationModel
