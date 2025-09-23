@@ -111,6 +111,7 @@ APIs
 
 from .chipped_image_sensor_model import ChippedImageSensorModel
 from .composite_sensor_model import CompositeSensorModel
+from .conditional_elevation_model import ConditionalElevationModel
 from .coordinates import (
     GeodeticWorldCoordinate,
     ImageCoordinate,
@@ -121,6 +122,7 @@ from .coordinates import (
 from .digital_elevation_model import DigitalElevationModel, DigitalElevationModelTileFactory, DigitalElevationModelTileSet
 from .elevation_model import ConstantElevationModel, ElevationModel, ElevationRegionSummary
 from .elevation_offset_provider import ConstantOffsetProvider, ElevationOffsetProvider
+from .em_condition import ElevationModelCondition, EMConditionFalse, EMConditionTrue
 from .gdal_sensor_model import GDALAffineSensorModel
 from .generic_dem_tile_set import GenericDEMTileSet
 from .multi_elevation_model import MultiElevationModel
@@ -154,11 +156,15 @@ from .srtm_dem_tile_set import SRTMTileSet
 __all__ = [
     "ChippedImageSensorModel",
     "CompositeSensorModel",
+    "ConditionalElevationModel",
     "ConstantElevationModel",
     "DigitalElevationModel",
     "DigitalElevationModelTileFactory",
     "DigitalElevationModelTileSet",
+    "EMConditionFalse",
+    "EMConditionTrue",
     "ElevationModel",
+    "ElevationModelCondition",
     "ElevationRegionSummary",
     "GDALAffineSensorModel",
     "GenericDEMTileSet",
