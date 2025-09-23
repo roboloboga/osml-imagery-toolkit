@@ -126,6 +126,7 @@ from .em_condition import ElevationModelCondition, EMConditionFalse, EMCondition
 from .gdal_sensor_model import GDALAffineSensorModel
 from .generic_dem_tile_set import GenericDEMTileSet
 from .multi_elevation_model import MultiElevationModel
+from .normalized_elevation_model import NormalizedElevationModel
 from .offset_elevation_model import OffsetElevationModel
 from .projective_sensor_model import ProjectiveSensorModel
 from .replacement_sensor_model import (
