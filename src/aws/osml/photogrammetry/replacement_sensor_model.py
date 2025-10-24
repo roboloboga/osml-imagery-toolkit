@@ -1,4 +1,5 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
 
 from abc import ABC
 from enum import Enum
@@ -17,6 +18,8 @@ from .coordinates import (
 )
 from .elevation_model import ConstantElevationModel, ElevationModel
 from .math_utils import equilateral_triangle
+from .multi_elevation_model import MultiElevationModel
+from .normalized_elevation_model import NormalizedElevationModel
 from .sensor_model import SensorModel, SensorModelOptions
 
 # TODO: Add Support for Grid Based RSM Sensor Models
@@ -503,15 +506,23 @@ class RSMPolynomialSensorModel(RSMSensorModel):
         :return: the corresponding world coordinate
         """
 
+        if elevation_model is None:
+            elevation_model = self.context.ground_domain.default_elevation_model
+        else:
+            elevation_model = MultiElevationModel(
+                [
+                    NormalizedElevationModel(elevation_model),
+                    self.context.ground_domain.default_elevation_model,
+                ],
+            )
+
         # This is the function we will be minimizing. Given a longitude, latitude coordinate we invoke the
         # world_to_image function to get a projection of that location in the image. Then we compute the
         # distance between that new image location and the input image location. When those locations match then
         # we know we have the world coordinate that corresponds to the input.
         def distance_to_target_coordinate(lonlat_coord: Tuple[float, float]) -> float:
             current_world_coordinate = GeodeticWorldCoordinate([lonlat_coord[0], lonlat_coord[1], 0.0])
-            self.context.ground_domain.default_elevation_model.set_elevation(current_world_coordinate)
-            if elevation_model:
-                elevation_model.set_elevation(current_world_coordinate)
+            elevation_model.set_elevation(current_world_coordinate)
             new_image_coordinate = self.world_to_image(current_world_coordinate)
             return sqrt(
                 (image_coordinate.x - new_image_coordinate.x) ** 2 + (image_coordinate.y - new_image_coordinate.y) ** 2
@@ -527,6 +538,11 @@ class RSMPolynomialSensorModel(RSMSensorModel):
             initial_guess = np.array([(v1.longitude + v4.longitude) / 2.0, (v1.latitude + v4.latitude) / 2.0])
         if isinstance(initial_guess, List):
             initial_guess = np.array(initial_guess)
+        initial_guess = self.context.ground_domain.ground_domain_coordinate_to_geodetic(
+            self.context.ground_domain.geodetic_to_ground_domain_coordinate(
+                GeodeticWorldCoordinate(initial_guess.tolist() + [0.0]),
+            ),
+        ).coordinate[:2]
 
         initial_search_distance = options.get(SensorModelOptions.INITIAL_SEARCH_DISTANCE) if options is not None else None
         if initial_search_distance is None:
@@ -559,11 +575,9 @@ class RSMPolynomialSensorModel(RSMSensorModel):
         # The minimization result is a (longitude,latitude) tuple, so we need to expand it to
         # longitude,latitude,elevation and replace the z component with the height from the elevation model.
         world_coordinate = GeodeticWorldCoordinate(np.append(res.x, 0.0))
-        self.context.ground_domain.default_elevation_model.set_elevation(world_coordinate)
-        if elevation_model:
-            elevation_model.set_elevation(world_coordinate)
+        elevation_model.set_elevation(world_coordinate)
 
-        return world_coordinate
+        return world_coordinate.normalized()
 
     def ground_domain_to_image(self, domain_coordinate: WorldCoordinate) -> ImageCoordinate:
         """
