@@ -1,4 +1,5 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
 
 from math import degrees, radians, sqrt
 from typing import Any, Dict, List, Optional, Tuple
@@ -6,7 +7,14 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from scipy.optimize import minimize
 
-from . import ConstantElevationModel, ElevationModel, GeodeticWorldCoordinate, ImageCoordinate, WorldCoordinate
+from . import (
+    ConstantElevationModel,
+    ElevationModel,
+    GeodeticWorldCoordinate,
+    ImageCoordinate,
+    MultiElevationModel,
+    WorldCoordinate,
+)
 from .math_utils import equilateral_triangle
 from .sensor_model import SensorModel, SensorModelOptions
 
@@ -194,15 +202,23 @@ class RPCSensorModel(SensorModel):
         :return: the corresponding world coordinate
         """
 
+        if elevation_model is None:
+            elevation_model = self.default_elevation_model
+        else:
+            elevation_model = MultiElevationModel(
+                [
+                    elevation_model,
+                    self.default_elevation_model,
+                ],
+            )
+
         # This is the function we will be minimizing. Given an x,y coordinate in the ground domain we use invoke the
         # ground_domain_to_image function to get a projection of that location in the image. Then we compute the
         # distance between that new image location and the input image location. When those locations match then
         # we know we have the ground domain coordinate that corresponds to the input.
         def distance_to_target_coordinate(lonlat_coord: Tuple[float, float]) -> float:
             ground_domain_coordinate = GeodeticWorldCoordinate([lonlat_coord[0], lonlat_coord[1], 0.0])
-            self.default_elevation_model.set_elevation(ground_domain_coordinate)
-            if elevation_model:
-                elevation_model.set_elevation(ground_domain_coordinate)
+            elevation_model.set_elevation(ground_domain_coordinate)
             new_image_coordinate = self.world_to_image(ground_domain_coordinate)
             return sqrt(
                 (image_coordinate.x - new_image_coordinate.x) ** 2 + (image_coordinate.y - new_image_coordinate.y) ** 2
@@ -237,8 +253,6 @@ class RPCSensorModel(SensorModel):
         # The minimization result is an (x,y) tuple, so we need to expand it to x,y,z and replace the z component with
         # the height from the elevation model. Note that the units of this are radians, radians, meters
         world_coordinate = GeodeticWorldCoordinate(np.append(res.x, 0.0))
-        self.default_elevation_model.set_elevation(world_coordinate)
-        if elevation_model:
-            elevation_model.set_elevation(world_coordinate)
+        elevation_model.set_elevation(world_coordinate)
 
         return world_coordinate
