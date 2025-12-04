@@ -62,3 +62,4 @@ class SensorModelOptions(str, Enum):
     INITIAL_GUESS = "initial_guess"
     INITIAL_SEARCH_DISTANCE = "initial_search_distance"
     IGNORE_DEFAULT_ELEVATION_MODEL = "ignore_default_elevation_model"
+    SOLVERS = "solvers"

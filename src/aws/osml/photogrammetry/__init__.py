@@ -109,6 +109,9 @@ APIs
 
 """
 
+from .bounded_neldermead_solver import BoundedNelderMeadSolver
+from .bounded_raymarch_solver import BoundedRayMarchSolver
+from .bounded_solver import BoundedSolver
 from .chipped_image_sensor_model import ChippedImageSensorModel
 from .composite_sensor_model import CompositeSensorModel
 from .conditional_elevation_model import ConditionalElevationModel
@@ -153,9 +156,13 @@ from .sicd_sensor_model import (
     SARImageCoordConverter,
     SICDSensorModel,
 )
+from .solver import Solver
 from .srtm_dem_tile_set import SRTMTileSet
 
 __all__ = [
+    "BoundedNelderMeadSolver",
+    "BoundedRayMarchSolver",
+    "BoundedSolver",
     "ChippedImageSensorModel",
     "CompositeSensorModel",
     "ConditionalElevationModel",
@@ -195,6 +202,7 @@ __all__ = [
     "SRTMTileSet",
     "SensorModel",
     "SensorModelOptions",
+    "Solver",
     "WorldCoordinate",
     "geocentric_to_geodetic",
     "geodetic_to_geocentric",
