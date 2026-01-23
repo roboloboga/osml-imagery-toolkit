@@ -1,13 +1,14 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2026-2026 General Atomics Integrated Intelligence, Inc.
 
 import logging
 from typing import Optional, Union
 
 import numpy as np
-from xsdata.formats.dataclass.parsers import XmlParser
 
 import aws.osml.formats.sicd.models.sicd_v1_2_1 as sicd121
 import aws.osml.formats.sicd.models.sicd_v1_3_0 as sicd130
+from aws.osml.formats.model_utils import sicd_parser
 
 from ..photogrammetry import (
     ImageCoordinate,
@@ -105,8 +106,7 @@ class SICDSensorModelBuilder(SensorModelBuilder):
             if self.sicd_xml is None or len(self.sicd_xml) == 0:
                 return None
 
-            parser = XmlParser()
-            sicd = parser.from_string(self.sicd_xml)
+            sicd = sicd_parser.from_string(self.sicd_xml)
             return SICDSensorModelBuilder.from_dataclass(sicd)
         except Exception as e:
             logging.error("Exception caught attempting to build SICD sensor model.", e)
