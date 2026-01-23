@@ -1,5 +1,5 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
-#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
+#  Copyright 2025-2026 General Atomics Integrated Intelligence, Inc.
 
 import unittest
 from math import radians
@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 import numpy as np
-from xsdata.formats.dataclass.parsers import XmlParser
 
 import aws.osml.formats.sicd.models.sicd_v1_2_1 as sicd121
+from aws.osml.formats.model_utils import sicd_parser
 from aws.osml.gdal.sicd_sensor_model_builder import poly1d_to_native, poly2d_to_native, xyzpoly_to_native, xyztype_to_ndarray
 from aws.osml.photogrammetry import (
     ConstantElevationModel,
@@ -35,7 +35,7 @@ class TestSICDSensorModel(unittest.TestCase):
         pass
 
     def test_xrgycr(self):
-        sicd: sicd121.SICD = XmlParser().from_path(Path("./test/data/sicd/example.sicd121.rma.xml"))
+        sicd: sicd121.SICD = sicd_parser.from_path(Path("./test/data/sicd/example.sicd121.rma.xml"))
 
         scp_ecf = WorldCoordinate(xyztype_to_ndarray(sicd.geo_data.scp.ecf))
         scp_pixel = ImageCoordinate([sicd.image_data.scppixel.col, sicd.image_data.scppixel.row])
@@ -129,7 +129,7 @@ class TestSICDSensorModel(unittest.TestCase):
         assert np.allclose(calculated_image_scp.coordinate, scp_pixel.coordinate)
 
     def test_rgzero_inca(self):
-        sicd: sicd121.SICD = XmlParser().from_path(Path("./test/data/sicd/example.sicd121.capella.xml"))
+        sicd: sicd121.SICD = sicd_parser.from_path(Path("./test/data/sicd/example.sicd121.capella.xml"))
 
         scp_ecf = WorldCoordinate(xyztype_to_ndarray(sicd.geo_data.scp.ecf))
         scp_pixel = ImageCoordinate([sicd.image_data.scppixel.col, sicd.image_data.scppixel.row])
@@ -214,7 +214,7 @@ class TestSICDSensorModel(unittest.TestCase):
             assert np.allclose(new_geo_point.coordinate[0:2], geo_point.coordinate[0:2], atol=0.00001)
 
     def test_rgazim_pfa(self):
-        sicd: sicd121.SICD = XmlParser().from_path(Path("./test/data/sicd/example.sicd121.pfa.xml"))
+        sicd: sicd121.SICD = sicd_parser.from_path(Path("./test/data/sicd/example.sicd121.pfa.xml"))
 
         scp_ecf = WorldCoordinate(xyztype_to_ndarray(sicd.geo_data.scp.ecf))
         scp_pixel = ImageCoordinate([sicd.image_data.scppixel.col, sicd.image_data.scppixel.row])

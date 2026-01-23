@@ -1,15 +1,13 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2026-2026 General Atomics Integrated Intelligence, Inc.
 
 import logging
 from typing import List, Optional, Tuple
 
-from xsdata.formats.dataclass.parsers import XmlParser
-from xsdata.formats.dataclass.serializers import XmlSerializer
-from xsdata.formats.dataclass.serializers.config import SerializerConfig
-
 import aws.osml.formats.sidd.models.sidd_v1_0_0 as sidd100
 import aws.osml.formats.sidd.models.sidd_v2_0_0 as sidd200
 import aws.osml.formats.sidd.models.sidd_v3_0_0 as sidd300
+from aws.osml.formats.model_utils import sidd_parser, sidd_serializer
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +21,7 @@ class SIDDUpdater:
         """
         self.xml_str = xml_str
         if self.xml_str is not None and len(self.xml_str) > 0:
-            parser = XmlParser()
-            self.sidd = parser.from_string(self.xml_str)
+            self.sidd = sidd_parser.from_string(self.xml_str)
 
     def update_image_data_for_chip(self, chip_bounds: List[int], output_size: Optional[Tuple[int, int]]) -> None:
         """
@@ -140,8 +137,7 @@ class SIDDUpdater:
 
         :return: xml encoded SIDD metadata
         """
-        serializer = XmlSerializer(config=SerializerConfig(pretty_print=False))
-        updated_xml = serializer.render(self.sidd)
+        updated_xml = sidd_serializer.render(self.sidd)
         return updated_xml
 
     @staticmethod

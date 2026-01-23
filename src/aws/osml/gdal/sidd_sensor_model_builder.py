@@ -1,14 +1,13 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
-#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
+#  Copyright 2025-2026 General Atomics Integrated Intelligence, Inc.
 
 import logging
 from typing import Optional, Union
 
-from xsdata.formats.dataclass.parsers import XmlParser
-
 import aws.osml.formats.sidd.models.sidd_v1_0_0 as sidd100
 import aws.osml.formats.sidd.models.sidd_v2_0_0 as sidd200
 import aws.osml.formats.sidd.models.sidd_v3_0_0 as sidd300
+from aws.osml.formats.model_utils import sidd_parser
 
 from ..photogrammetry import (
     ChippedImageSensorModel,
@@ -54,8 +53,7 @@ class SIDDSensorModelBuilder(SensorModelBuilder):
             if self.sidd_xml is None or len(self.sidd_xml) == 0:
                 return None
 
-            parser = XmlParser()
-            sicd = parser.from_string(self.sidd_xml)
+            sicd = sidd_parser.from_string(self.sidd_xml)
             return SIDDSensorModelBuilder.from_dataclass(sicd)
         except Exception as e:
             logging.error("Exception caught attempting to build SIDD sensor model.", e)

@@ -1,14 +1,14 @@
 #  Copyright 2023-2025 Amazon.com, Inc. or its affiliates.
-#  Copyright 2025-2025 General Atomics Integrated Intelligence, Inc.
+#  Copyright 2025-2026 General Atomics Integrated Intelligence, Inc.
 
 import unittest
 from math import radians
 from pathlib import Path
 
 import numpy as np
-from xsdata.formats.dataclass.parsers import XmlParser
 
 import aws.osml.formats.sidd.models.sidd_v2_0_0 as sidd200
+from aws.osml.formats.model_utils import sidd_parser
 from aws.osml.gdal.sidd_sensor_model_builder import SIDDSensorModelBuilder
 from aws.osml.photogrammetry import (
     ChippedImageSensorModel,
@@ -21,7 +21,7 @@ from aws.osml.photogrammetry import (
 
 class TestSIDDSensorModel(unittest.TestCase):
     def test_planar_projection(self):
-        sidd: sidd200.SIDD = XmlParser().from_path(Path("./test/data/sidd/example.sidd.xml"))
+        sidd: sidd200.SIDD = sidd_parser.from_path(Path("./test/data/sidd/example.sidd.xml"))
 
         sm = SIDDSensorModelBuilder.from_dataclass(sidd)
 
@@ -61,7 +61,7 @@ class TestSIDDSensorModel(unittest.TestCase):
             assert np.allclose(computed_image_location.coordinate, image_location.coordinate, atol=0.5)
 
     def test_chipped_sidd(self):
-        sidd: sidd200.SIDD = XmlParser().from_path(Path("./test/data/sidd/example.sidd-chip.xml"))
+        sidd: sidd200.SIDD = sidd_parser.from_path(Path("./test/data/sidd/example.sidd-chip.xml"))
 
         sm = SIDDSensorModelBuilder.from_dataclass(sidd)
         assert sm is not None

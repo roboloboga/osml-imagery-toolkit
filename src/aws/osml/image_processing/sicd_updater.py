@@ -1,12 +1,11 @@
 #  Copyright 2023-2024 Amazon.com, Inc. or its affiliates.
+#  Copyright 2026-2026 General Atomics Integrated Intelligence, Inc.
 
 import logging
 from math import floor
 from typing import List, Optional, Tuple
 
-from xsdata.formats.dataclass.parsers import XmlParser
-from xsdata.formats.dataclass.serializers import XmlSerializer
-from xsdata.formats.dataclass.serializers.config import SerializerConfig
+from aws.osml.formats.model_utils import sicd_parser, sicd_serializer
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,7 @@ class SICDUpdater:
         """
         self.xml_str = xml_str
         if self.xml_str is not None and len(self.xml_str) > 0:
-            parser = XmlParser()
-            self.sicd = parser.from_string(self.xml_str)
+            self.sicd = sicd_parser.from_string(self.xml_str)
 
         # Here we're storing off the original first row/col to support the case where multiple chips are
         # created from a SICD image that has already been chipped.
@@ -67,6 +65,5 @@ class SICDUpdater:
 
         :return: xml encoded SICD metadata
         """
-        serializer = XmlSerializer(config=SerializerConfig(pretty_print=False))
-        updated_xml = serializer.render(self.sicd)
+        updated_xml = sicd_serializer.render(self.sicd)
         return updated_xml
